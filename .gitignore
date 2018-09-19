@@ -90,6 +90,9 @@ ENV/
 # PyCharm
 .idea/
 
+# Secrets
+config.py
+
 # =========================
 # Operating System Files
 # =========================
