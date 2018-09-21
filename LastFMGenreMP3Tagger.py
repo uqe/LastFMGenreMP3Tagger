@@ -9,7 +9,7 @@ eyed3.log.setLevel("ERROR")
 API_KEY = config.last_api_key
 API_SECRET = config.last_api_secret
 username = config.last_u
-password_hash = pylast.md5(config.last_p)
+password_hash = config.last_p
 
 network = pylast.LastFMNetwork(api_key=API_KEY, api_secret=API_SECRET,
                                username=username, password_hash=password_hash)
@@ -99,7 +99,7 @@ for dir_name, subdirList, file_list in os.walk(folder):
                 audio_file = eyed3.load(file_path)
                 if not audio_file:
                     # if the file couldn't be read, rename it and try again
-                    print('eyed3 returned None for file. Temporarily renaming file and trying again')
+                    print('eyed3 could not open file. Temporarily renaming file and trying again')
                     temp_path = os.path.join(dir_name, "temp.mp3")
                     os.rename(file_path, temp_path)
                     audio_file = eyed3.load(temp_path)
