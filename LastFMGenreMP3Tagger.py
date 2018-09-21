@@ -4,6 +4,8 @@ import eyed3
 import argparse
 import os
 
+eyed3.log.setLevel("ERROR")
+
 API_KEY = config.last_api_key
 API_SECRET = config.last_api_secret
 username = config.last_u
@@ -18,6 +20,7 @@ args = parser.parse_args()
 folder = args.path[0]
 
 genre_map = {}
+artists_to_skip = []
 
 # list of preferred genres in order of preference (i.e. favour 'post-rock' over 'post-metal' when both are present)
 preferred_genres = ['blackgaze', 'dungeon synth', 'shoegaze', 'post-rock', 'post-metal', 'screamo', 'emo', 'slowcore',
@@ -48,41 +51,38 @@ def get_top_tag(tags_list):
 
 
 def update_mp3_genre(mp3_file):
-        artist = mp3_file.tag.artist
-        # as long as the artist tag is not empty...
-        if artist:
-            print(mp3_file.tag.title)
-            if artist in genre_map:
-                mp3_file.tag.genre = genre_map[artist]
-                mp3_file.tag.save()
-                print('using cached genre %s' % genre_map[artist])
-                return
-            else:
-                last_artist = network.get_artist(artist)
-                if last_artist:
+    artist = mp3_file.tag.artist
+    # as long as the artist tag is not empty...
+    if artist and artist not in artists_to_skip:
+        if artist not in genre_map:
+            last_artist = network.get_artist(artist)
+            if last_artist:
+                try:
                     tags = last_artist.get_top_tags(8)
-                    top_tag = get_top_tag(tags)
-                    # 'IDM' needs to be all caps
-                    top_tag = 'IDM' if top_tag == 'Idm' else top_tag
-                    genre_map[artist] = top_tag
+                except pylast.WSError:
+                    # artist can't be found - skip and prevent it from being tried again
+                    print('Artist \'%s\' could not be found on Last.fm - skipping' % artist)
+                    artists_to_skip.append(artist)
+                    return
+                top_tag = get_top_tag(tags)
+                # 'IDM' needs to be all caps
+                top_tag = 'IDM' if top_tag == 'Idm' else top_tag
+                genre_map[artist] = top_tag
 
-                    print('for the artist %s' % artist)
-                    print('we have the last fm artist %s' % last_artist)
-                    print('and the top tag is %s' % genre_map[artist])
-
-                    # workaround to prevent standard genre recognition
-                    g = eyed3.id3.Genre(genre_map[artist])
-                    g.id = None
-                    mp3_file.tag.genre = g
-                    mp3_file.tag.save(version=(2, 4, 0))
+        # workaround to prevent standard genre recognition
+        print('Setting genre to: %s' % genre_map[artist])
+        g = eyed3.id3.Genre(genre_map[artist])
+        g.id = None
+        mp3_file.tag.genre = g
+        mp3_file.tag.save(version=(2, 4, 0))
 
 
 for dir_name, subdirList, file_list in os.walk(folder):
-    print('Found directory: %s' % dir_name)
+    print('Processing files in: %s' % dir_name)
     for file_name in file_list:
         if file_name.endswith('.mp3'):
             file_path = os.path.join(dir_name, file_name)
-            print(file_path)
+            print('Processing : %s' % file_name)
             audio_file = eyed3.load(file_path)
 
             if not audio_file:
