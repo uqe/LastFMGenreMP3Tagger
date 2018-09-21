@@ -24,7 +24,10 @@ artists_to_skip = []
 
 # list of preferred genres in order of preference (i.e. favour 'post-rock' over 'post-metal' when both are present)
 preferred_genres = ['blackgaze', 'dungeon synth', 'shoegaze', 'post-rock', 'post-metal', 'screamo', 'emo', 'slowcore',
-                    'idm']
+                    'idm', 'jazz hop']
+
+correct_genre_names = {'Idm': 'IDM',
+                         'Jazz Hop': 'Jazz-Hop'}
 
 
 def get_top_tag(tags_list):
@@ -77,8 +80,10 @@ def update_mp3_genre(mp3_file):
                     artists_to_skip.append(artist)
                     return
 
-                # 'IDM' needs to be all caps
-                top_tag = 'IDM' if top_tag == 'Idm' else top_tag
+                # Correct genre name (e.g. 'Idm' -> 'IDM') if necessary
+                if top_tag in correct_genre_names:
+                    top_tag = correct_genre_names[top_tag]
+
                 genre_map[artist] = top_tag
 
         # workaround to prevent standard genre recognition
