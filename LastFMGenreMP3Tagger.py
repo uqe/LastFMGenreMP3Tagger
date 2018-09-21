@@ -28,12 +28,18 @@ preferred_genres = ['blackgaze', 'dungeon synth', 'shoegaze', 'post-rock', 'post
 
 
 def get_top_tag(tags_list):
+    if not tags_list:
+        return None
+
     ignore_tags = ['seen live', 'favorites']
     tag_names = []
     for tag in tags_list:
         tag_name = tag.item.name
         if tag_name not in ignore_tags:
             tag_names.append(tag_name)
+
+    if not tag_names:
+        return None
 
     # if the most popular tag is a priority genre, just return it as it's likely exactly what we want
     if tag_names[0] in preferred_genres:
@@ -64,7 +70,13 @@ def update_mp3_genre(mp3_file):
                     print('Artist \'%s\' could not be found on Last.fm - skipping' % artist)
                     artists_to_skip.append(artist)
                     return
+
                 top_tag = get_top_tag(tags)
+                if not top_tag:
+                    print('Artist \'%s\' has no tags on Last.fm - skipping' % artist)
+                    artists_to_skip.append(artist)
+                    return
+
                 # 'IDM' needs to be all caps
                 top_tag = 'IDM' if top_tag == 'Idm' else top_tag
                 genre_map[artist] = top_tag
@@ -83,20 +95,23 @@ for dir_name, subdirList, file_list in os.walk(folder):
         if file_name.endswith('.mp3'):
             file_path = os.path.join(dir_name, file_name)
             print('Processing : %s' % file_name)
-            audio_file = eyed3.load(file_path)
-
-            if not audio_file:
-                # if the file couldn't be read, rename it and try again
-                print('eyed3 returned None for file. Temporarily renaming file and trying again')
-                temp_path = os.path.join(dir_name, "temp.mp3")
-                os.rename(file_path, temp_path)
-                audio_file = eyed3.load(temp_path)
-                # if it still doesn't work, give up
+            try:
+                audio_file = eyed3.load(file_path)
                 if not audio_file:
-                    print('eyed3 returned None for file again. Terminating')
-                    continue
-                update_mp3_genre(audio_file)
-                # name it back to the original
-                os.rename(temp_path, file_path)
-            else:
-                update_mp3_genre(audio_file)
+                    # if the file couldn't be read, rename it and try again
+                    print('eyed3 returned None for file. Temporarily renaming file and trying again')
+                    temp_path = os.path.join(dir_name, "temp.mp3")
+                    os.rename(file_path, temp_path)
+                    audio_file = eyed3.load(temp_path)
+                    # if it still doesn't work, give up
+                    if not audio_file:
+                        print('eyed3 returned None for file again. Terminating')
+                        continue
+                    update_mp3_genre(audio_file)
+                    # name it back to the original
+                    os.rename(temp_path, file_path)
+                else:
+                    update_mp3_genre(audio_file)
+            except Exception as err:
+                print(err)
+                print('Continuing with next file...')
