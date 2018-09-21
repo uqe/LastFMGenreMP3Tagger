@@ -70,9 +70,11 @@ def update_mp3_genre(mp3_file):
                     print('we have the last fm artist %s' % last_artist)
                     print('and the top tag is %s' % genre_map[artist])
 
-                    mp3_file.tag.genre = genre_map[artist]
-
-                    mp3_file.tag.save()
+                    # workaround to prevent standard genre recognition
+                    g = eyed3.id3.Genre(genre_map[artist])
+                    g.id = None
+                    mp3_file.tag._setGenre(g, False)
+                    mp3_file.tag.save(version=(2, 4, 0))
 
 
 for dir_name, subdirList, file_list in os.walk(folder):
