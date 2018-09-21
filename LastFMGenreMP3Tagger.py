@@ -60,10 +60,10 @@ def update_mp3_genre(mp3_file):
             else:
                 last_artist = network.get_artist(artist)
                 if last_artist:
-                    tags = last_artist.get_top_tags(6)
+                    tags = last_artist.get_top_tags(8)
                     top_tag = get_top_tag(tags)
                     # 'IDM' needs to be all caps
-                    top_tag = 'IDM' if top_tag is 'Idm' else top_tag
+                    top_tag = 'IDM' if top_tag == 'Idm' else top_tag
                     genre_map[artist] = top_tag
 
                     print('for the artist %s' % artist)
@@ -71,6 +71,7 @@ def update_mp3_genre(mp3_file):
                     print('and the top tag is %s' % genre_map[artist])
 
                     mp3_file.tag.genre = genre_map[artist]
+
                     mp3_file.tag.save()
 
 
