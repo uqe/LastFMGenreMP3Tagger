@@ -9,6 +9,7 @@ eyed3.log.setLevel("ERROR")
 API_KEY = config.last_api_key
 API_SECRET = config.last_api_secret
 username = config.last_u
+# pylast.md5(password)
 password_hash = config.last_p
 
 network = pylast.LastFMNetwork(api_key=API_KEY, api_secret=API_SECRET,
@@ -24,7 +25,7 @@ artists_to_skip = []
 
 # list of preferred genres in order of preference (i.e. favour 'post-rock' over 'post-metal' when both are present)
 preferred_genres = ['blackgaze', 'dungeon synth', 'shoegaze', 'post-rock', 'post-metal', 'screamo', 'emo', 'slowcore',
-                    'idm', 'jazz hop']
+                    'idm', 'jazz hop', 'chiptune']
 
 correct_genre_names = {'Idm': 'IDM',
                          'Jazz Hop': 'Jazz-Hop'}
