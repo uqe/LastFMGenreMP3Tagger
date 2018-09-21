@@ -73,7 +73,7 @@ def update_mp3_genre(mp3_file):
                     # workaround to prevent standard genre recognition
                     g = eyed3.id3.Genre(genre_map[artist])
                     g.id = None
-                    mp3_file.tag._setGenre(g, False)
+                    mp3_file.tag.genre = g
                     mp3_file.tag.save(version=(2, 4, 0))
 
 
