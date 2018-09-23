@@ -24,8 +24,8 @@ genre_map = {}
 artists_to_skip = []
 
 # list of preferred genres in order of preference (i.e. favour 'post-rock' over 'post-metal' when both are present)
-preferred_genres = ['blackgaze', 'dungeon synth', 'shoegaze', 'post-rock', 'post-metal', 'screamo', 'emo', 'slowcore',
-                    'idm', 'jazz hop', 'chiptune']
+preferred_genres = ['blackgaze', 'dungeon synth', 'shoegaze', 'indietronica', 'post-rock', 'post-metal', 'screamo',
+                    'emo', 'slowcore', 'idm', 'jazz hop', 'chiptune']
 
 correct_genre_names = {'Idm': 'IDM',
                          'Jazz Hop': 'Jazz-Hop'}
