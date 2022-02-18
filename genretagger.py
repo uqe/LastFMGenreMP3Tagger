@@ -58,16 +58,19 @@ def get_top_tag(tags_list):
 
 
 def update_music_file_genre(mp3_file, file_name):
+    has_genre = False
     artist = ""
 
     if file_name.endswith('.flac'):
+        has_genre = "genre" in mp3_file
         artist = mp3_file["artist"][0]
 
     if file_name.endswith('.mp3'):
+        has_genre = bool(mp3_file.tags.getall("TCON"))
         artist = mp3_file.tags.getall("TPE1")[0].text[0]
 
     # as long as the artist tag is not empty...
-    if artist and artist not in artists_to_skip:
+    if artist and artist not in artists_to_skip and not has_genre:
         if artist not in genre_map:
             last_artist = network.get_artist(artist)
             if last_artist:
@@ -77,7 +80,7 @@ def update_music_file_genre(mp3_file, file_name):
                 except pylast.WSError:
                     # artist can't be found - skip and prevent it from being tried again
                     print(colored((
-                        '      Не могу найти артиста \'%s\' на ластике, поэтому пропускаю \n' % artist), 'red', 'on_grey', attrs=['bold']))
+                        '    Не могу найти артиста \'%s\' на ластике, поэтому пропускаю \n' % artist), 'red', 'on_grey', attrs=['bold']))
                     artists_to_skip.append(artist)
                     return
 
@@ -85,7 +88,7 @@ def update_music_file_genre(mp3_file, file_name):
 
                 if not top_tag:
                     print(colored((
-                        '      У артиста \'%s\' нет тегов на ластике, поэтому пропускаю \n' % artist), 'red', 'on_grey', attrs=['bold']))
+                        '    У артиста \'%s\' нет тегов на ластике, поэтому пропускаю \n' % artist), 'red', 'on_grey', attrs=['bold']))
                     artists_to_skip.append(artist)
                     return
 
@@ -102,18 +105,23 @@ def update_music_file_genre(mp3_file, file_name):
             mp3_file.tags.add(TCON(text=[genre_map[artist]]))
 
         mp3_file.save()
-        print('      Установил жанр: %s' % genre_map[artist], "\n")
+        print(colored(('    Установил жанр: %s \n' %
+              genre_map[artist]), 'green', attrs=['bold']))
+
+    if has_genre:
+        print(colored(('    Пропустил файл, жанр уже прописан \n'),
+              'red', attrs=['bold']))
 
 
 for dir_name, subdirList, file_list in os.walk(folder):
 
     print(colored(('Обрабатываю папку: %s' %
-          dir_name), 'green', attrs=['bold', 'dark'],))
+          dir_name), 'blue', attrs=['bold']))
 
     for file_name in file_list:
         if file_name.endswith('.flac') or file_name.endswith('.mp3'):
             file_path = os.path.join(dir_name, file_name)
-            print(colored(('    Обрабатываю файл: %s' %
+            print(colored(('  Обрабатываю файл: %s' %
                   file_name), 'cyan', attrs=['bold']))
 
             try:
